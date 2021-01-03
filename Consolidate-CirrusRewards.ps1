@@ -1,4 +1,4 @@
-﻿function Get-SpendableCoins {
+function Get-SpendableCoins {
     <#
     .SYNOPSIS
         Returns a lis of Spendable Transactions for a wallet and account
@@ -163,28 +163,44 @@ function Send-SelectedCoins {
     return Invoke-RestMethod -Method Post -Uri $SendUri -Body $SendBody -ContentType "application/json"
 }
 
-$Creds = Get-Credential -Message "Wallet Name as Username and Wallet Password"
+#################### Contstants ####################
+
+<#
+Set the number of coins (UTXOs) you want to include in a single consolidation. The larger the set, 
+the more likely the smallest coins will remain in your wallet. Don't go over 1000 as it's not supported.
+#>
+$CoinsPerCoinSet = 950
+
+<#
+Better set an unused address as destination. After running this script you can transfer all resulting 
+coins to STRAX.
+#>
+$DestinationAddress = Read-Host "Enter an unused destination address to consolidate to"
+
+# Don't set the fee to low, or transactions will fail. 0.01 CRS will usually get the job done.
+$Fee = 0.01
+
+#################### Contstants ####################
+
+$Creds = Get-Credential -UserName 'MiningWallet' -Message "Wallet Name as Username and Wallet Password"
 
 $WalletName = $Creds.GetNetworkCredential().UserName
 $Password = $Creds.GetNetworkCredential().Password
 $BaseUri = 'http://localhost:37223'
 $AccountName = 'account 0'
 
-$UTXOsToConsolidate = Get-SpendableCoins -WalletName $WalletName -BaseUri $BaseUri -AccountName $AccountName | Where-Object {$_.confirmations -gt 100} | Sort-Object -Property amount -Descending
+$UTXOsToConsolidate = Get-SpendableCoins -WalletName $WalletName -BaseUri $BaseUri -AccountName $AccountName | Where-Object {$_.confirmations -gt 10} | Sort-Object -Property amount -Descending
 
-$CoinsPerCoinSet = 900
+<#
+By dividing the number of eligible coins by the the number of coins per consolidation round and 
+storing it in an integer (whole number), you are rounding down the result of the equation.
+#>
 $TransactionsToSend = [int32]($UTXOsToConsolidate.Count / $CoinsPerCoinSet)
 
-$DestinationAddress = Read-Host "Enter an unused destination address to consolidate to" # Better take an unused address, even from a different Wallet and then transfer all coins from that address to STRAX.
-
-foreach ($CoinSet in 0..($TransactionsToSend - 1)) {
+$TXs = foreach ($CoinSet in 0..($TransactionsToSend - 1)) {
     $FirstCoinIndex = $CoinSet * $CoinsPerCoinSet
     $LastCoinIndex = ($CoinSet + 1) * $CoinsPerCoinSet - 1
     $CoinsToSend = $UTXOsToConsolidate[$FirstCoinIndex..$LastCoinIndex]
-    Write-Host $("INFO: Sending Transaction {0} of {1}. Combining a total amount of {2} CRS" -f $($Coinset + 1), $TransactionsToSend, $(($CoinsToSend | `
-        Measure-Object -Property amount -sum).sum /1e8)) -ForegroundColor Cyan
-    Write-Host "INFO: Press CTRL+C to abort sending."
-    Pause
     $TxParameters = @{
         Coins = $CoinsToSend
         DestinationAddress = $DestinationAddress
@@ -192,9 +208,18 @@ foreach ($CoinSet in 0..($TransactionsToSend - 1)) {
         Password = $Password
         AccountName = $AccountName
         BaseUri = $BaseUri
-        Fee = 0.05
+        Fee = $Fee
     }
     $Tx = Send-SelectedCoins @TxParameters
-    $Tx.transactionId
-    $TX.outputs
+
+    [pscustomobject]@{
+        TransactionId = $Tx.transactionId
+        DestinationAddress = $TX.outputs | Select-Object -ExpandProperty address
+        Amount = $TX.outputs.amount / 1e8
+    }
 }
+
+$TXs
+Start-Sleep -Seconds 2
+Write-Host "Sent $(($TXs | Measure-Object -Property Amount -Sum).sum) to  $DestinationAddress" -ForegroundColor DarkGreen
+pause
