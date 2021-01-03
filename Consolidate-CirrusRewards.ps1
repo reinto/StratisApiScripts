@@ -163,7 +163,7 @@ function Send-SelectedCoins {
     return Invoke-RestMethod -Method Post -Uri $SendUri -Body $SendBody -ContentType "application/json"
 }
 
-#################### Contstants ####################
+#################### Constants ####################
 
 <#
 Set the number of coins (UTXOs) you want to include in a single consolidation. The larger the set, 
@@ -180,7 +180,7 @@ $DestinationAddress = Read-Host "Enter an unused destination address to consolid
 # Don't set the fee to low, or transactions will fail. 0.01 CRS will usually get the job done.
 $Fee = 0.01
 
-#################### Contstants ####################
+#################### Constants ####################
 
 $Creds = Get-Credential -UserName 'MiningWallet' -Message "Wallet Name as Username and Wallet Password"
 
