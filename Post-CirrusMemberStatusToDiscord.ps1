@@ -13,7 +13,7 @@ $FedMembersOffline = $FedMembers | Where-Object {
 [System.Collections.ArrayList]$EmbedArray = @()
 $Color = '16711680'
 $Title = 'Inactive Block Producers'
-
+$CustomImageUrl = 'https://i.ytimg.com/vi/UoStgb4P6xU/hqdefault.jpg'
 
 if ($FedMembersOffline) {
     $Description = "The following Block Producers have been inactive for over two hours."
@@ -24,6 +24,11 @@ if ($FedMembersOffline) {
             value = $Member.periodOfInactivity
             inline = $true
         }
+    }
+    $Image = [PSCustomObject]@{
+        url = $CustomImageUrl
+        height = 200
+        width = 200
     }
 } else {
     $Description = "No inactive Block Producers."
