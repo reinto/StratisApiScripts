@@ -6,7 +6,9 @@ param (
 
 $FedMemberUri = 'http://localhost:37223/api/DefaultVoting/fedmembers'
 $FedMembers = Invoke-RestMethod -Uri $FedMemberUri -Method Get
-$FedMembersOffline = $FedMembers | Where-Object {$_.periodOfInactivity -notlike '00:*' -and $_.periodOfInactivity -notlike '01:*'}
+$FedMembersOffline = $FedMembers | Where-Object {
+    $_.periodOfInactivity -notlike '00:*' -and $_.periodOfInactivity -notlike '01:*' -and $_.pubkey -notlike '02ace4*'
+}
 
 [System.Collections.ArrayList]$EmbedArray = @()
 $Color = '16711680'
