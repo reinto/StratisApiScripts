@@ -18,27 +18,35 @@ $CustomImageUrl = 'https://i.ytimg.com/vi/UoStgb4P6xU/hqdefault.jpg'
 if ($FedMembersOffline) {
     $Description = "The following Block Producers have been inactive for over two hours."
 
-    $Fields = foreach ($Member in $FedMembersOffline) {
+    [array]$Fields = foreach ($Member in $FedMembersOffline) {
         [PSCustomObject]@{
             name = $Member.pubkey.substring(0,6)
             value = $Member.periodOfInactivity
             inline = $true
         }
     }
+    
     $Image = [PSCustomObject]@{
         url = $CustomImageUrl
         height = 200
         width = 200
     }
+    
+    $EmbedObject = [PSCustomObject]@{
+        color = $Color
+        title = $Title
+        description = $Description
+        fields = $Fields
+        image = $Image
+    }
 } else {
     $Description = "No inactive Block Producers."
-}
-
-$EmbedObject = [PSCustomObject]@{
-    color = $Color
-    title = $Title
-    description = $Description
-    fields = $Fields
+    
+    $EmbedObject = [PSCustomObject]@{
+        color = $Color
+        title = $Title
+        description = $Description
+    }
 }
 
 $EmbedArray.Add($EmbedObject)
