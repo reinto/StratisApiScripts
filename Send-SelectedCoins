@@ -258,7 +258,7 @@ if ($Wallets.count -eq 1) {
 
 # Check for Accounts
 [array]$WalletAccounts = Invoke-RestMethod -Method Get -uri ("{0}/api/Wallet/accounts?WalletName={1}" -f $BaseUri, $WalletName)
-if ($WalletAccounts -eq 1) {
+if ($WalletAccounts.count -eq 1) {
     $AccountName = $WalletAccounts
 } else {
     while ($AccountName -notin $WalletAccounts) {
