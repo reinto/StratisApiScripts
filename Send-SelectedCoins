@@ -244,7 +244,7 @@ $BaseUri = 'http://localhost:17103'
 # Check for Wallet to use
 [array]$Wallets = (Invoke-RestMethod -Method Get -uri ("{0}/api/Wallet/list-wallets" -f $BaseUri) -ErrorAction SilentlyContinue).walletNames
 if ($Wallets.count -eq 1) {
-    $WalletName = $Wallets.ToString()
+    $WalletName = $Wallets[0]
 } elseif ($Wallets.count -ge 2) {
     while ($WalletName -notin $Wallets) {
         Write-Host "Found multiple wallets:" -ForegroundColor Yellow
@@ -259,7 +259,7 @@ if ($Wallets.count -eq 1) {
 # Check for Accounts
 [array]$WalletAccounts = Invoke-RestMethod -Method Get -uri ("{0}/api/Wallet/accounts?WalletName={1}" -f $BaseUri, $WalletName)
 if ($WalletAccounts.count -eq 1) {
-    $AccountName = $WalletAccounts.ToString()
+    $AccountName = $WalletAccounts[0]
 } else {
     while ($AccountName -notin $WalletAccounts) {
         Write-Host "Found multiple accounts:" -ForegroundColor Yellow
