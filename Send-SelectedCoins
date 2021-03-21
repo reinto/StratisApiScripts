@@ -294,5 +294,4 @@ if ($SpecifyAmount -eq 'y') {
             -AccountName $AccountName -Password $Password
 } else {exit}
 
-
-Clear-Variable Creds,Password
+Clear-Variable Creds,Password,DestinationAddress,SpecifyAmount
